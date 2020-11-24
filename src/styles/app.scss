@@ -28,6 +28,13 @@ h3, h4 {
     font-weight: 400;
     color: rgb(100, 100, 100);
 }
+// For the sliding animation
+.App {
+    transition: all 0.5s ease;
+}
+.library-open {
+    margin-left: 30%;
+}
 
 // Importing other partial scss
 @import './song';

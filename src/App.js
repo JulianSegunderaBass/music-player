@@ -22,7 +22,8 @@ function App() {
     const [libraryStatus, setLibraryStatus] = useState(false);
 
     return (
-        <div className="App">
+        // For pushing the player to the right when library is open
+        <div className={`App ${libraryStatus ? "library-open" : ""}`}>
             <Nav 
                 libraryStatus={libraryStatus}
                 setLibraryStatus={setLibraryStatus}
@@ -33,7 +34,10 @@ function App() {
             <Player 
                 isPlaying={isPlaying} 
                 setIsPlaying={setIsPlaying} 
-                currentSong={currentSong} 
+                currentSong={currentSong}
+                setCurrentSong={setCurrentSong}
+                songs={songs} 
+                setSongs={setSongs}
             />
             <Library 
                 songs={songs} 

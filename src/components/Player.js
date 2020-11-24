@@ -1,14 +1,38 @@
 // Controls for the music player
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay, faAngleLeft, faAngleRight, faPause } from '@fortawesome/free-solid-svg-icons';
 
-const Player = ({ currentSong, isPlaying, setIsPlaying }) => {
+const Player = ({ currentSong, setCurrentSong, songs, setSongs, isPlaying, setIsPlaying }) => {
     // Use Ref in action to access audio HTML tag
     const audioRef = useRef(null);
 
+    // Use Effect runs the same class-changing function as Library Song
+    // Runs when currentSong is changed
+    useEffect(() => {
+        const newSongs = songs.map((song) => {
+            // Map through each song and check for id
+            // Changes the active states
+            if (song.id === currentSong.id) {
+                return {
+                    ...song,
+                    active: true,
+                };
+            } else {
+                return {
+                    ...song,
+                    active: false,
+                };
+            }
+        });
+        // Setting the song data state to the new array with updated active states
+        setSongs(newSongs);
+    }, [currentSong]);
+
     // Event Handlers
+
+    // Playing the current song
     const playSongHandler = () => {
         // .current accesses the actual audio link
         if (isPlaying) {
@@ -19,10 +43,29 @@ const Player = ({ currentSong, isPlaying, setIsPlaying }) => {
             setIsPlaying(!isPlaying);
         }
     }
+
+    // For creating the usable time bar
     const dragHandler = (e) => {
-        // For creating the usable time bar
         audioRef.current.currentTime = e.target.value;
         setSongInfo({...songInfo, currentTime: e.target.value});
+    }
+
+    // Skipping through the music list
+    const skipTrackHandler = (direction) => {
+        // Comparing song ids with current song id to find current index
+        let currentIndex = songs.findIndex((song) => song.id === currentSong.id);
+        if (direction === "skip-forward") {
+            // The modulus operation brings the index back to 0
+            setCurrentSong(songs[(currentIndex + 1) % songs.length]);
+        } else if (direction === "skip-back") {
+            if ((currentIndex - 1) % songs.length === -1) {
+                // When the song index tried to go to -1, set current song to last song in list
+                setCurrentSong(songs[songs.length - 1]);
+                // Return so the following function no longer runs
+                return;
+            }
+            setCurrentSong(songs[(currentIndex - 1) % songs.length]);
+        }
     }
 
     // Updating Time Bar
@@ -70,6 +113,7 @@ const Player = ({ currentSong, isPlaying, setIsPlaying }) => {
             {/* div for the music control buttons */}
             <div className="play-control">
                 <FontAwesomeIcon 
+                    onClick={() => skipTrackHandler('skip-back')}
                     className="skip-back" 
                     size="2x" 
                     icon={ faAngleLeft } 
@@ -81,6 +125,7 @@ const Player = ({ currentSong, isPlaying, setIsPlaying }) => {
                     icon={ isPlaying ? faPause : faPlay  } 
                 />
                 <FontAwesomeIcon 
+                    onClick={() => skipTrackHandler('skip-forward')}
                     className="skip-forward" 
                     size="2x" 
                     icon={ faAngleRight } 
@@ -90,6 +135,7 @@ const Player = ({ currentSong, isPlaying, setIsPlaying }) => {
             {/* ref property connects to ref in the function */}
             <audio 
                 onLoadedData={autoPlayHandler} 
+                onEnded={() => skipTrackHandler('skip-forward')}
                 onTimeUpdate={timeUpdateHandler} 
                 onLoadedMetadata={timeUpdateHandler} 
                 ref={audioRef} 

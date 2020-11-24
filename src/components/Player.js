@@ -1,34 +1,12 @@
 // Controls for the music player
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay, faAngleLeft, faAngleRight, faPause } from '@fortawesome/free-solid-svg-icons';
 
 const Player = ({ currentSong, setCurrentSong, songs, setSongs, isPlaying, setIsPlaying }) => {
     // Use Ref in action to access audio HTML tag
     const audioRef = useRef(null);
-
-    // Use Effect runs the same class-changing function as Library Song
-    // Runs when currentSong is changed
-    useEffect(() => {
-        const newSongs = songs.map((song) => {
-            // Map through each song and check for id
-            // Changes the active states
-            if (song.id === currentSong.id) {
-                return {
-                    ...song,
-                    active: true,
-                };
-            } else {
-                return {
-                    ...song,
-                    active: false,
-                };
-            }
-        });
-        // Setting the song data state to the new array with updated active states
-        setSongs(newSongs);
-    }, [currentSong]);
 
     // Event Handlers
 
@@ -44,6 +22,26 @@ const Player = ({ currentSong, setCurrentSong, songs, setSongs, isPlaying, setIs
         }
     }
 
+    const activeLibraryHandler = (nextPrevious) => {
+        const newSongs = songs.map((song) => {
+            // Map through each song and check for id
+            // Changes the active states
+            if (song.id === nextPrevious.id) {
+                return {
+                    ...song,
+                    active: true,
+                };
+            } else {
+                return {
+                    ...song,
+                    active: false,
+                };
+            }
+        });
+        // Setting the song data state to the new array with updated active states
+        setSongs(newSongs);
+    }
+
     // For creating the usable time bar
     const dragHandler = (e) => {
         audioRef.current.currentTime = e.target.value;
@@ -57,14 +55,17 @@ const Player = ({ currentSong, setCurrentSong, songs, setSongs, isPlaying, setIs
         if (direction === "skip-forward") {
             // The modulus operation brings the index back to 0
             setCurrentSong(songs[(currentIndex + 1) % songs.length]);
+            activeLibraryHandler(songs[(currentIndex + 1) % songs.length]);
         } else if (direction === "skip-back") {
             if ((currentIndex - 1) % songs.length === -1) {
                 // When the song index tried to go to -1, set current song to last song in list
                 setCurrentSong(songs[songs.length - 1]);
+                activeLibraryHandler(songs[songs.length - 1]);
                 // Return so the following function no longer runs
                 return;
             }
             setCurrentSong(songs[(currentIndex - 1) % songs.length]);
+            activeLibraryHandler(songs[(currentIndex - 1) % songs.length]);
         }
     }
 
